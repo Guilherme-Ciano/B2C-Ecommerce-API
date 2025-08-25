@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  passwordHash String
+  phone       String
+
+  addressStreet      String
+  addressNumber      String
+  addressComplement  String?
+  addressNeighborhood String
+  addressCity        String
+  addressState       String
+  addressZipCode     String
+  addressCountry     String @default("BR")
+
+  role        Role     @default(CUSTOMER)
+  
+  store       Store?   @relation("StoreOwner")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Store {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+
+  status      StoreStatus @default(OPEN)
+
+  ownerId     String   @unique
+  owner       User     @relation("StoreOwner", fields: [ownerId], references: [id])
+
+  email       String
+  phone       String
+  website     String?
+
+  addressStreet      String
+  addressNumber      String
+  addressComplement  String?
+  addressNeighborhood String
+  addressCity        String
+  addressState       String
+  addressZipCode     String
+  addressCountry     String @default("BR")
+
+  category  String
+  cnpj        String
+  ie          String @default("SP")
+  logoUrl     String?
+  bannerUrl   String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Role {
+  CUSTOMER
+  SELLER
+  ADMIN
+}
+
+enum StoreStatus {
+  OPEN 
+  CLOSED 
+  IN_MAINTENANCE
+  SUSPENDED
+}

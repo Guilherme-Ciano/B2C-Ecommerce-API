@@ -1,0 +1,18 @@
+export const userSelect = {
+  id: true,
+  name: true,
+  email: true,
+  phone: true,
+  role: true,
+  passwordHash: true,
+  createdAt: true,
+  updatedAt: true,
+  addressStreet: true,
+  addressNumber: true,
+  addressComplement: true,
+  addressNeighborhood: true,
+  addressCity: true,
+  addressState: true,
+  addressZipCode: true,
+  addressCountry: true,
+}
