@@ -49,8 +49,12 @@ export const formatUserToSafeUser = (user: PrismaUserResult): SafeUserDTO => ({
   },
 })
 
-export const formatUsers = (users: PrismaUserResult[]): SafeUserDTO[] => {
+export const formatUsers = (users: PrismaUserResult[]): User[] => {
   return users.map(formatUser)
+}
+
+export const formatSafeUsers = (users: PrismaUserResult[]): SafeUserDTO[] => {
+  return users.map(formatUserToSafeUser)
 }
 
 export const mapCreateDtoToPrisma = (payload: CreateUserDTO) => {
