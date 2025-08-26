@@ -28,7 +28,7 @@ This section covers important features and improvements that are not critical fo
 
 #### Code Quality
 
-- [ ] **Middleware/Hooks**: Centralize common logic (e.g., logging, error handling) into Fastify hooks.
+- [ ] **Middleware/Hooks**: Centralize common logic (e.g., logging) into Fastify hooks.
 - [ ] **JSDoc Comments**: Add JSDoc to all public methods in the `services` and `repositories` to improve code clarity and enable auto-generated documentation.
 
 ---
@@ -50,5 +50,9 @@ This section serves as a record of completed work, providing a clear overview of
 - [x] Created `UserService` and `StoreService` with business logic.
 - [x] Defined basic API routes for `User` and `Store` entities.
 - [x] Implemented **User Registration** and a basic **Login** method.
+
+### Middlewares
+
+- [x] Implemented error handling for the Prisma & Zod
 
 ---
