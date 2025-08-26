@@ -14,9 +14,12 @@ import {
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 import userRoutes from './routes/user.routes'
+import { handleAPIErrors } from './middlewares/error-handling'
 
 export function buildApp() {
   const app = Fastify({ logger: true }).withTypeProvider<ZodTypeProvider>()
+
+  app.setErrorHandler(handleAPIErrors)
 
   app.register(cors)
   app.register(security)

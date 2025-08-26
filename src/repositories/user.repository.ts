@@ -5,7 +5,6 @@ import { HttpCodes } from '../utils/enums/http-codes'
 import {
   formatUser,
   formatUsers,
-  formatUserToSafeUser,
   mapCreateDtoToPrisma,
   mapUpdateDtoToPrisma,
 } from '../utils/functions/mappers/user.mapper'
@@ -22,43 +21,28 @@ import {
 export class UserRepository implements UserInterface {
   private prisma = new PrismaClient()
 
-  async findAll(page: number, limit: number): Promise<Response<SafeUserDTO[] | undefined>> {
-    try {
-      const [users, total] = await Promise.all([
-        this.prisma.user.findMany({
-          skip: (page - 1) * limit,
-          take: limit,
-          select: userSelect,
-        }),
-        this.prisma.user.count(),
-      ])
+  async findAll(page: number, limit: number): Promise<Response<SafeUserDTO[]>> {
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        select: userSelect,
+      }),
+      this.prisma.user.count(),
+    ])
 
-      const formattedUsers = formatUsers(users)
+    const formattedUsers = formatUsers(users)
 
-      return {
-        code: HttpCodes.SUCCESS,
-        data: formattedUsers,
-        meta: {
-          limit,
-          page,
-          totalItems: total,
-          totalPages: Math.ceil(total / limit),
-        },
-        message: createMessageFor('User').SUCCESS.OK,
-      }
-    } catch (error) {
-      console.log(`
-        =-=-=-=-=-=-=- ERROR =-=-=-=-=-=-=
-        ${error}
-        =-=-=-=-=-=-=-       =-=-=-=-=-=-=
-        `)
-
-      return {
-        code: HttpCodes.INTERNAL_ERROR,
-        data: undefined,
-        errors: [{ message: 'Internal error while searching for entity' }],
-        message: createMessageFor('User').SERVER_ERROR.INTERNAL_SERVER_ERROR,
-      }
+    return {
+      code: HttpCodes.SUCCESS,
+      data: formattedUsers,
+      meta: {
+        limit,
+        page,
+        totalItems: total,
+        totalPages: Math.ceil(total / limit),
+      },
+      message: createMessageFor('User').SUCCESS.OK,
     }
   }
 
@@ -106,126 +90,66 @@ export class UserRepository implements UserInterface {
     }
   }
 
-  async createUser(payload: CreateUserDTO): Promise<Response<SafeUserDTO | undefined>> {
-    try {
-      const dataForPrisma = mapCreateDtoToPrisma(payload)
+  async createUser(payload: CreateUserDTO): Promise<Response<SafeUserDTO>> {
+    const dataForPrisma = mapCreateDtoToPrisma(payload)
 
-      const rawEntity = await this.prisma.user.create({
-        data: {
-          ...dataForPrisma,
-          passwordHash: payload.passwordHash,
-        },
-        select: userSelect,
-      })
+    const rawEntity = await this.prisma.user.create({
+      data: {
+        ...dataForPrisma,
+        passwordHash: payload.passwordHash,
+      },
+      select: userSelect,
+    })
 
-      const formattedEntity = formatUser(rawEntity)
+    const formattedEntity = formatUser(rawEntity)
 
-      return {
-        code: HttpCodes.SUCCESS,
-        data: formattedEntity,
-        message: createMessageFor('User').SUCCESS.CREATED,
-      }
-    } catch (error) {
-      console.log(`
-        =-=-=-=-=-=-=- ERROR =-=-=-=-=-=-=
-        ${error}
-        =-=-=-=-=-=-=-       =-=-=-=-=-=-=
-        `)
-
-      return {
-        code: HttpCodes.INTERNAL_ERROR,
-        data: undefined,
-        errors: [{ message: 'Internal error while creating store' }],
-        message: createMessageFor('User').SERVER_ERROR.INTERNAL_SERVER_ERROR,
-      }
+    return {
+      code: HttpCodes.SUCCESS,
+      data: formattedEntity,
+      message: createMessageFor('User').SUCCESS.CREATED,
     }
   }
 
-  async updateUser(payload: UpdateUserDTO): Promise<Response<SafeUserDTO | undefined>> {
-    try {
-      const { id, data: updateData } = mapUpdateDtoToPrisma(payload)
+  async updateUser(payload: UpdateUserDTO): Promise<Response<SafeUserDTO>> {
+    const { id, data: updateData } = mapUpdateDtoToPrisma(payload)
 
-      const response = await this.prisma.user.update({
-        where: { id },
-        data: updateData,
-        select: userSelect,
-      })
+    const response = await this.prisma.user.update({
+      where: { id },
+      data: updateData,
+      select: userSelect,
+    })
 
-      const data = formatUser(response)
+    const data = formatUser(response)
 
-      return {
-        code: HttpCodes.SUCCESS,
-        data,
-        message: createMessageFor('User').SUCCESS.UPDATED,
-      }
-    } catch (error) {
-      console.log(`
-        =-=-=-=-=-=-=- ERROR =-=-=-=-=-=-=
-        ${error}
-        =-=-=-=-=-=-=-       =-=-=-=-=-=-=
-        `)
-
-      return {
-        code: HttpCodes.NOT_FOUND,
-        data: undefined,
-        errors: [{ message: 'Entity not found with related id' }],
-        message: createMessageFor('User').CLIENT_ERROR.NOT_FOUND,
-      }
+    return {
+      code: HttpCodes.SUCCESS,
+      data,
+      message: createMessageFor('User').SUCCESS.UPDATED,
     }
   }
 
-  async changeRoleUser(payload: ChangeUserRoleDTO): Promise<Response<SafeUserDTO | undefined>> {
-    try {
-      const response = await this.prisma.user.update({
-        where: { id: payload.id },
-        data: { role: payload.role },
-        select: userSelect,
-      })
+  async changeRoleUser(payload: ChangeUserRoleDTO): Promise<Response<SafeUserDTO>> {
+    const response = await this.prisma.user.update({
+      where: { id: payload.id },
+      data: { role: payload.role },
+      select: userSelect,
+    })
 
-      const data = formatUser(response)
+    const data = formatUser(response)
 
-      return {
-        code: HttpCodes.SUCCESS,
-        data,
-        message: createMessageFor('User').SUCCESS.UPDATED,
-      }
-    } catch (error) {
-      console.log(`
-        =-=-=-=-=-=-=- ERROR =-=-=-=-=-=-=
-        ${error}
-        =-=-=-=-=-=-=-       =-=-=-=-=-=-=
-        `)
-
-      return {
-        code: HttpCodes.NOT_FOUND,
-        data: undefined,
-        errors: [{ message: 'Entity not found with related id' }],
-        message: createMessageFor('Store').CLIENT_ERROR.NOT_FOUND,
-      }
+    return {
+      code: HttpCodes.SUCCESS,
+      data,
+      message: createMessageFor('User').SUCCESS.UPDATED,
     }
   }
 
-  async deleteUser(uuid: string): Promise<Response<string | undefined>> {
-    try {
-      await this.prisma.user.delete({ where: { id: uuid } })
-      return {
-        code: HttpCodes.SUCCESS,
-        data: uuid,
-        message: createMessageFor('User').SUCCESS.DELETED,
-      }
-    } catch (error: any) {
-      console.log(`
-        =-=-=-=-=-=-=- ERROR =-=-=-=-=-=-=
-        ${error}
-        =-=-=-=-=-=-=-       =-=-=-=-=-=-=
-        `)
-
-      return {
-        code: HttpCodes.NOT_FOUND,
-        data: undefined,
-        errors: [{ message: 'Entity not found with related id' }],
-        message: createMessageFor('User').CLIENT_ERROR.NOT_FOUND,
-      }
+  async deleteUser(uuid: string): Promise<Response<string>> {
+    await this.prisma.user.delete({ where: { id: uuid } })
+    return {
+      code: HttpCodes.SUCCESS,
+      data: uuid,
+      message: createMessageFor('User').SUCCESS.DELETED,
     }
   }
 }
