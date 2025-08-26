@@ -1,4 +1,4 @@
-import { PrismaClient } from '../../generated/prisma'
+import { PrismaClient, Prisma } from '../../generated/prisma'
 import { UserInterface } from '../interfaces/user.interface'
 import { userSelect } from '../utils/constants/user.selects'
 import { HttpCodes } from '../utils/enums/http-codes'
@@ -144,12 +144,20 @@ export class UserRepository implements UserInterface {
     }
   }
 
-  async deleteUser(uuid: string): Promise<Response<string>> {
-    await this.prisma.user.delete({ where: { id: uuid } })
-    return {
-      code: HttpCodes.SUCCESS,
-      data: uuid,
-      message: createMessageFor('User').SUCCESS.DELETED,
+  async deleteUser(uuid: string): Promise<Response<string | undefined>> {
+    try {
+      await this.prisma.user.delete({ where: { id: uuid } })
+      return {
+        code: HttpCodes.SUCCESS,
+        data: uuid,
+        message: createMessageFor('User').SUCCESS.DELETED,
+      }
+    } catch (error) {
+      return {
+        code: HttpCodes.NOT_FOUND,
+        data: undefined,
+        message: createMessageFor('User').CLIENT_ERROR.NOT_FOUND,
+      }
     }
   }
 }

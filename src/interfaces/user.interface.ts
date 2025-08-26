@@ -14,5 +14,5 @@ export interface UserInterface {
   createUser(payload: CreateUserDTO): Promise<Response<SafeUserDTO>>
   updateUser(payload: UpdateUserDTO): Promise<Response<SafeUserDTO>>
   changeRoleUser(payload: ChangeUserRoleDTO): Promise<Response<SafeUserDTO>>
-  deleteUser(uuid: string): Promise<Response<string>>
+  deleteUser(uuid: string): Promise<Response<string | undefined>>
 }
